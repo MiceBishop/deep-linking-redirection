@@ -4,83 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Redirecting...</title>
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-        padding: 20px;
-        text-align: center;
-      }
-      .error {
-        color: #dc3545;
-      }
-      .info {
-        color: #0066cc;
-      }
-    </style>
     <script>
-      function tryDeepLink() {
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const app = urlParams.get("app");
+      // Get the full query string
+      const queryString = window.location.search;
 
-        if (!app) {
-          showError("Missing 'app' parameter in the URL.");
-          return;
-        }
+      // Parse the query parameters
+      const urlParams = new URLSearchParams(queryString);
 
+      // Extract the app name (first parameter)
+      const app = urlParams.get("app");
+
+      if (app) {
         // Construct the path from all remaining parameters
         const path = Array.from(urlParams.entries())
-          .filter(([key]) => key !== "app")
-          .map(([, value]) => value)
-          .join("/");
+          .filter(([key]) => key !== "app") // Exclude the app parameter
+          .map(([, value]) => value) // Get only the values
+          .join("/"); // Join them into a path
 
+        // Construct the deep link URL
         const deepLinkURL = `${app}://${path}`;
-        const fallbackURL = urlParams.get("fallback") || null;
 
-        // Create hidden iframe for deep link attempt
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        document.body.appendChild(iframe);
-
-        // Set timeout for fallback
-        const timeout = setTimeout(() => {
-          if (fallbackURL) {
-            window.location.href = fallbackURL;
-          } else {
-            showError(
-              `Unable to open ${app}. Please make sure the app is installed.`
-            );
-          }
-        }, 5000);
-
-        // Try deep link
-        iframe.src = deepLinkURL;
-
-        // Cleanup
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 2100);
+        // Redirect to the deep link
+        window.location.href = deepLinkURL;
+      } else {
+        // Show an error if the app parameter is missing
+        console.error("App name is missing!");
+        document.body.innerHTML = `<p>Error: Missing 'app' parameter in the URL.</p>`;
       }
-
-      function showError(message) {
-        document.getElementById(
-          "message"
-        ).innerHTML = `<p class="error">${message}</p>`;
-      }
-
-      // Run when page loads
-      window.onload = tryDeepLink;
     </script>
   </head>
   <body>
-    <div id="message">
-      <p class="info">Redirecting...</p>
-    </div>
+    <p>Redirecting...</p>
   </body>
 </html>
